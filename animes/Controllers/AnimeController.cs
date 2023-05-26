@@ -2,6 +2,7 @@
 using animes.Models;
 using JikanDotNet;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 namespace animes.Controllers
@@ -20,19 +21,22 @@ namespace animes.Controllers
         {
             var buscaAnime = await jikan.SearchAnimeAsync(searchQuery);
 
-            var searchLog = new AnimeSearchLog
+            if(!searchQuery.IsNullOrEmpty())
             {
-                NomeAnime = searchQuery,
-                DataHora = DateTime.Now
-            };
+                var searchLog = new AnimeSearchLog
+                {
+                    NomeAnime = searchQuery,
+                    DataHora = DateTime.Now
+                };
 
-            _context.animeSearchLogs.Add(searchLog);
-            _context.SaveChanges();
+                _context.animeSearchLogs.Add(searchLog);
+                _context.SaveChanges();
+            }            
 
             return View("Search", buscaAnime.Data);
         }
 
-        public IActionResult GenereteLogsFile()
+        public IActionResult GenerateLogsFile()
         {
             var logs = _context.animeSearchLogs.ToList();
             var fileContent = GenerateLogsFileContent(logs);
@@ -45,7 +49,7 @@ namespace animes.Controllers
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("Anime Search Logs");
+            sb.AppendLine("Logs de Animes Pesquisados");
             sb.AppendLine("======================================");
 
             foreach (var log in logs)
